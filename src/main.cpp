@@ -43,6 +43,8 @@ int    pivot_dir = -1;          // −1 = first swing left
 bool   turning90 = false;
 double turn_t    = 0.0;
 bool   after_spin = false;      // ensures we enter FSM right after spin
+float angle = 0.0;
+const float target_angle = 90.0;
 
 /* ─────────────────────────────────────────────────────── */
 int main(int argc, char* argv[])
@@ -148,14 +150,16 @@ int main(int argc, char* argv[])
             }
             
             if(turning90 == true  && !after_spin){
-            	double elapsed = (steady_clock.now() - spin_start).seconds();
+                auto sensorValue = sensors_sub->get_latest_sensor_data();
+                float gyroValue = sensorValue.angular_velocity_z;
             	RCLCPP_INFO(node->get_logger(), "Turning");
-            	if (elapsed < TURN90_TIME) {
+            	if (abs(angle) < target_angle) {
+                    angle += gyroValue * DT;
                     RefSpeed cmd{0, SPEED};
                     ref_pub->trigger_publish(cmd); 
                     RCLCPP_INFO(node->get_logger(),
-                    "Turning… elapsed = %.3f s / %.3f s",
-                    elapsed, TURN90_TIME);
+                    "Turning… angle = %.3f deg / %.3f deg",
+                    angle, target_angle);
                     loop.sleep();  
                     continue;
                 }
