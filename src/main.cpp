@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
             
             if(turning90 == true  && !after_spin){
                 auto sensorValue = sensors_sub->get_latest_sensor_data();
-                float gyroValue = sensorValue.angular_velocity_z;
+                float gyroValue = sensorValue.angular_velocity_z * (180.0f / M_PI);
             	RCLCPP_INFO(node->get_logger(), "Turning");
             	if (abs(angle) < target_angle) {
                     angle += gyroValue * DT;
